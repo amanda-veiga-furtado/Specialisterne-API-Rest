@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Tempo de geração: 13/11/2024 às 13:45
+-- Tempo de geração: 13/11/2024 às 17:37
 -- Versão do servidor: 8.2.0
 -- Versão do PHP: 8.2.13
 
@@ -37,16 +37,10 @@ CREATE TABLE IF NOT EXISTS `usuario` (
   `senha_usuario` varchar(220) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
   `recuperar_senha` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
   `statusAdministrador_usuario` enum('c','a','b') COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT 'c',
+  `dados_json` text COLLATE utf8mb3_unicode_ci,
   PRIMARY KEY (`id_usuario`),
   UNIQUE KEY `unique_email_usuario` (`email_usuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=181 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
-
---
--- Despejando dados para a tabela `usuario`
---
-
-INSERT INTO `usuario` (`id_usuario`, `nome_usuario`, `telefone_usuario`, `email_usuario`, `endereco_usuario`, `senha_usuario`, `recuperar_senha`, `statusAdministrador_usuario`) VALUES
-(180, 'Amanda', '551155653199', 'amandaveigafurtado@gmail.com', 'Rua 2, 55, Apto 2A - Bairro 7, SP/SP - CEP: 55653199', '$2y$10$ukW0X4EwHKzwqWB8vghFceDYJNUE2njQ/xwiGJ2puFLrUOesBlyUm', NULL, 'c');
+) ENGINE=InnoDB AUTO_INCREMENT=184 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

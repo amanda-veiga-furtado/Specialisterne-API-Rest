@@ -1,26 +1,15 @@
-<?php 
+<?php  
 session_start();
 ob_start();
 
-include_once 'conexao.php';
-include 'css/functions.php';
-include_once 'menu.php';
-
-$dados = []; // Array para armazenar os dados enviados no formulário
+include_once 'conexao.php'; // Conexão com o banco de dados
+include 'css/functions.php'; // Funções adicionais, se necessário
+include_once 'menu.php'; // Menu, se aplicável
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['CadUsuario'])) {
+    // Dados do formulário
     $nome_usuario = trim($_POST['nome_usuario']);
-    $telefone_usuario = "";
     $email_usuario = trim($_POST['email_usuario']);
-
-    // Validação do formato de e-mail
-    if (!filter_var($email_usuario, FILTER_VALIDATE_EMAIL)) {
-        $_SESSION['mensagem'] = "Erro: E-mail inválido!";
-        header("Location: " . $_SERVER['PHP_SELF']);
-        exit();
-    }
-
-    // Validação e concatenação do endereço
     $cep = trim($_POST['cep']);
     $estado = trim($_POST['estado']);
     $cidade = trim($_POST['cidade']);
@@ -28,35 +17,48 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['CadUsuario'])) {
     $rua = trim($_POST['rua']);
     $numero_end = trim($_POST['numero_end']);
     $complemento = trim($_POST['complemento']);
+    $codigo_telefonico_pais = trim($_POST['codigo_telefonico_pais']);
+    $codigo_telefonico_estado = trim($_POST['codigo_telefonico_estado']);
+    $numero_telefonico = trim($_POST['numero_telefonico']);
+    $senha_usuario = trim($_POST['senha_usuario']);
 
-    // Verifica se todos os campos de endereço foram preenchidos
-    if (!empty($cep) && !empty($estado) && !empty($cidade) && !empty($bairro) && !empty($rua) && !empty($numero_end)) {
-        $endereco_usuario = "$rua, $numero_end, $complemento - $bairro, $cidade/$estado - CEP: $cep";
-    } else {
+    // Validações
+    if (!filter_var($email_usuario, FILTER_VALIDATE_EMAIL)) {
+        $_SESSION['mensagem'] = "Erro: E-mail inválido!";
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit();
+    }
+
+    if (empty($cep) || empty($estado) || empty($cidade) || empty($bairro) || empty($rua) || empty($numero_end)) {
         $_SESSION['mensagem'] = "Erro: Todos os campos do endereço devem ser preenchidos!";
         header("Location: " . $_SERVER['PHP_SELF']);
         exit();
     }
 
-    $senha_usuario = trim($_POST['senha_usuario']);
-
-    // Validação e concatenação do telefone
-    $codigo_telefonico_pais = trim($_POST['codigo_telefonico_pais']);
-    $codigo_telefonico_estado = trim($_POST['codigo_telefonico_estado']);
-    $numero_telefonico = trim($_POST['numero_telefonico']);
-
-    if (ctype_digit($codigo_telefonico_pais) && ctype_digit($codigo_telefonico_estado) && ctype_digit($numero_telefonico)) {
-        $telefone_usuario = $codigo_telefonico_pais . $codigo_telefonico_estado . $numero_telefonico;
-    } else {
+    if (!ctype_digit($codigo_telefonico_pais) || !ctype_digit($codigo_telefonico_estado) || !ctype_digit($numero_telefonico)) {
         $_SESSION['mensagem'] = "Erro: O telefone deve conter apenas números!";
         header("Location: " . $_SERVER['PHP_SELF']);
         exit();
     }
 
+    // Concatena os dados formatados
+    $telefone_usuario = $codigo_telefonico_pais . $codigo_telefonico_estado . $numero_telefonico;
+    $endereco_usuario = "$rua, $numero_end, $complemento - $bairro, $cidade/$estado - CEP: $cep";
+
     // Hash da senha
     $senha_hash = password_hash($senha_usuario, PASSWORD_DEFAULT);
 
-    $dados = $_POST; // Armazena os dados para repopular o formulário em caso de erro
+    // Criação do array associativo para JSON
+    $dados_usuario = [
+        'nome_usuario' => $nome_usuario,
+        'email_usuario' => $email_usuario,
+        'telefone_usuario' => $telefone_usuario,
+        'endereco_usuario' => $endereco_usuario,
+        'senha_usuario' => $senha_hash
+    ];
+
+    // Converte o array em JSON
+    $dados_json = json_encode($dados_usuario);
 
     try {
         // Verifica duplicidade de e-mail
@@ -71,19 +73,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['CadUsuario'])) {
         } else {
             // Insere o novo usuário
             $stmt = $conn->prepare(
-                "INSERT INTO usuario (nome_usuario, telefone_usuario, email_usuario, endereco_usuario, senha_usuario) 
-                VALUES (:nome_usuario, :telefone_usuario, :email_usuario, :endereco_usuario, :senha_usuario)"
+                "INSERT INTO usuario (dados_json) VALUES (:dados_json)"
             );
-
-            $stmt->bindParam(':nome_usuario', $nome_usuario);
-            $stmt->bindParam(':telefone_usuario', $telefone_usuario);
-            $stmt->bindParam(':email_usuario', $email_usuario);
-            $stmt->bindParam(':endereco_usuario', $endereco_usuario);
-            $stmt->bindParam(':senha_usuario', $senha_hash);
+            $stmt->bindParam(':dados_json', $dados_json);
             $stmt->execute();
 
             $_SESSION['mensagem'] = "Usuário cadastrado com sucesso!";
-            $dados = []; // Limpa os dados após sucesso
         }
     } catch (PDOException $e) {
         $_SESSION['mensagem'] = "Erro: Usuário não cadastrado! " . $e->getMessage();
@@ -130,57 +125,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['CadUsuario'])) {
 
                 <form name="cad-usuario" id="cad-usuario" method="POST" action="" enctype="multipart/form-data" style="width: 100%;">
                     <h2>Nome Completo</h2>
-                    <input type="text" name="nome_usuario" id="nome_usuario" 
-                           value="<?php echo isset($dados['nome_usuario']) ? htmlspecialchars($dados['nome_usuario'], ENT_QUOTES) : ''; ?>" 
-                           style="width: 100%;" required><br>
+                    <input type="text" name="nome_usuario" id="nome_usuario" style="width: 100%;" required><br>
 
                     <h2>Telefone</h2>
                     <label for="codigo_telefonico_pais">+</label>
-                    <input type="tel" name="codigo_telefonico_pais" id="codigo_telefonico_pais" placeholder=""
-                           value="<?php echo isset($dados['codigo_telefonico_pais']) ? htmlspecialchars($dados['codigo_telefonico_pais'], ENT_QUOTES) : ''; ?>" 
-                           style="width: 12%;" required pattern="\d*" 
-                           title="Apenas números são permitidos" oninput="this.value = this.value.replace(/\D/g, '')">
-
-                       <input type="tel" name="codigo_telefonico_estado" id="codigo_telefonico_estado" placeholder=""
-                           value="<?php echo isset($dados['codigo_telefonico_estado']) ? htmlspecialchars($dados['codigo_telefonico_estado'], ENT_QUOTES) : ''; ?>" 
-                           style="width: 12%;" required pattern="\d*" 
-                           title="Apenas números são permitidos" oninput="this.value = this.value.replace(/\D/g, '')">
-
-                    <input type="tel" name="numero_telefonico" id="numero_telefonico" 
-                           value="<?php echo isset($dados['numero_telefonico']) ? htmlspecialchars($dados['numero_telefonico'], ENT_QUOTES) : ''; ?>" 
-                           style="width: 72%;" required pattern="\d*" 
-                           title="Apenas números são permitidos" oninput="this.value = this.value.replace(/\D/g, '')"><br>
+                    <input type="tel" name="codigo_telefonico_pais" id="codigo_telefonico_pais" style="width: 12%;" required pattern="\d*">
+                    <input type="tel" name="codigo_telefonico_estado" id="codigo_telefonico_estado" style="width: 12%;" required pattern="\d*">
+                    <input type="tel" name="numero_telefonico" id="numero_telefonico" style="width: 72%;" required pattern="\d*"><br>
 
                     <h2>E-mail</h2>
-                    <input type="email" name="email_usuario" id="email_usuario" 
-                           value="<?php echo isset($dados['email_usuario']) ? htmlspecialchars($dados['email_usuario'], ENT_QUOTES) : ''; ?>" 
-                           style="width: 100%;" required><br>
+                    <input type="email" name="email_usuario" id="email_usuario" style="width: 100%;" required><br>
 
                     <h2>Endereço Completo</h2>
-                    <input type="text" name="cep" id="cep" 
-                           value="<?php echo isset($dados['cep']) ? htmlspecialchars($dados['cep'], ENT_QUOTES) : ''; ?>" 
-                           style="width: 100%;" required pattern="\d*" 
-                           title="Apenas números são permitidos" oninput="this.value = this.value.replace(/\D/g, '')" placeholder="CEP"><br>
-
-                    <input type="text" name="estado" id="estado" required style="width: 49%;" placeholder="Estado"><?php echo isset($dados['estado']) ? htmlspecialchars($dados['estado'], ENT_QUOTES) : ''; ?>
-
-                    <input type="text" name="cidade" id="cidade" required style="width: 49%;" placeholder="Cidade"><?php echo isset($dados['cidade']) ? htmlspecialchars($dados['cidade'], ENT_QUOTES) : ''; ?><br>
-
-                    <input type="text" name="bairro" id="bairro" required style="width: 100%;" placeholder="Bairro"><?php echo isset($dados['bairro']) ? htmlspecialchars($dados['bairro'], ENT_QUOTES) : ''; ?><br>
-
-                    <input type="text" name="rua" id="rua" required style="width: 80%;" placeholder="Rua/Avenida"><?php echo isset($dados['rua']) ? htmlspecialchars($dados['rua'], ENT_QUOTES) : ''; ?>
-
-                    <input type="text" name="numero_end" id="numero_end" 
-                           value="<?php echo isset($dados['numero_end']) ? htmlspecialchars($dados['numero_end'], ENT_QUOTES) : ''; ?>" 
-                           style="width: 19%;" required pattern="\d*" 
-                           title="Apenas números são permitidos" oninput="this.value = this.value.replace(/\D/g, '')"placeholder="Número"><br>
-
-                           <input type="text" name="complemento" id="complemento" required style="width: 100%;" placeholder="Complemento"><?php echo isset($dados['complemento']) ? htmlspecialchars($dados['complemento'], ENT_QUOTES) : ''; ?>
-
+                    <input type="text" name="cep" id="cep" style="width: 100%;" required pattern="\d*"><br>
+                    <input type="text" name="estado" id="estado" style="width: 49%;" required>
+                    <input type="text" name="cidade" id="cidade" style="width: 49%;" required><br>
+                    <input type="text" name="bairro" id="bairro" style="width: 100%;" required><br>
+                    <input type="text" name="rua" id="rua" style="width: 80%;" required>
+                    <input type="text" name="numero_end" id="numero_end" style="width: 19%;" required pattern="\d*"><br>
+                    <input type="text" name="complemento" id="complemento" style="width: 100%;" required><br>
 
                     <h2>Senha</h2>
-                    <input type="password" name="senha_usuario" id="senha_usuario" 
-                           placeholder="Digite sua senha" style="width: 100%;" required><br>
+                    <input type="password" name="senha_usuario" id="senha_usuario" style="width: 100%;" required><br>
 
                     <input type="submit" name="CadUsuario" value="Cadastrar" class="button-long">
                 </form>

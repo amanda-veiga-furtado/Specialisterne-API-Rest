@@ -2,10 +2,10 @@
 // Inicia a sessão, se necessário para controle de erros
 session_start();
 
-// Inclui a conexão com o banco de dados e outras funções, caso necessário
+// Inclui a conexão com o banco de dados
 include_once 'conexao.php';
 
-// Define que a resposta será no formato JSON
+// Define que a resposta será em formato JSON
 header('Content-Type: application/json');
 
 // Função para enviar a resposta em formato JSON com uma indentação mais legível
@@ -21,25 +21,30 @@ function sendResponse($statusCode, $data) {
 }
 
 try {
-    // Preparar e executar a consulta SQL para buscar os usuários
+    // Consulta para obter os dados dos usuários
     $stmt = $conn->prepare("SELECT id_usuario, nome_usuario, email_usuario, telefone_usuario, endereco_usuario FROM usuario");
     $stmt->execute();
+
+    // Obtém todos os usuários
     $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Verifica se encontrou usuários
+    // Verifica se encontrou algum usuário
     if (count($usuarios) > 0) {
+        // Adiciona o link para detalhes em cada usuário
+        foreach ($usuarios as &$usuario) {
+            // Ajusta o link para detalhes, incluindo o domínio completo (base_url)
+            $usuario['link_detalhes'] = "http://" . $_SERVER['HTTP_HOST'] . "/detalhes_usuario.php?id=" . $usuario['id_usuario'];
+        }
+
         // Retorna a lista de usuários com status 200 (sucesso)
         sendResponse(200, $usuarios);
     } else {
-        // Retorna uma mensagem de erro caso não encontre usuários
-        sendResponse(404, [
-            'message' => 'Nenhum usuário encontrado'
-        ]);
+        // Caso não haja usuários, retorna mensagem de erro
+        sendResponse(404, ['message' => 'Nenhum usuário encontrado']);
     }
+
 } catch (PDOException $e) {
-    // Caso ocorra um erro na consulta
-    sendResponse(500, [
-        'message' => 'Erro ao buscar usuários: ' . $e->getMessage()
-    ]);
+    // Caso ocorra um erro na consulta, retorna erro 500
+    sendResponse(500, ['message' => 'Erro ao acessar os dados dos usuários: ' . $e->getMessage()]);
 }
 ?>

@@ -1,59 +1,123 @@
-<?php 
-// Habilitar CORS (opcional, dependendo do uso)
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json; charset=UTF-8");
+<?php
+session_start();
+ob_start();
 
 include_once 'conexao.php';
+include 'css/functions.php';
+include_once 'menu.php';
 
 try {
-    // Configuração de paginação
-    $pagina_atual = filter_input(INPUT_GET, "page", FILTER_SANITIZE_NUMBER_INT);
-    $pagina = !empty($pagina_atual) ? $pagina_atual : 1;
-    $limite_resultado = 7;
-    $inicio = ($limite_resultado * $pagina) - $limite_resultado;
-
-    // Parâmetro de busca
-    $search = filter_input(INPUT_GET, 'search', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-    $search_param = '%' . $search . '%';
-
-    // Query para buscar usuários com paginação, incluindo telefone e endereço
-    $query_usuario = "SELECT id_usuario, nome_usuario, email_usuario, telefone_usuario, endereco_usuario, statusAdministrador_usuario
-                      FROM usuario
-                      WHERE nome_usuario LIKE :search OR email_usuario LIKE :search
-                      LIMIT :inicio, :limite";
-
-    $stmt = $conn->prepare($query_usuario);
-    $stmt->bindParam(':search', $search_param, PDO::PARAM_STR);
-    $stmt->bindValue(':inicio', (int) $inicio, PDO::PARAM_INT);
-    $stmt->bindValue(':limite', (int) $limite_resultado, PDO::PARAM_INT);
+    // Consultar os usuários
+    $stmt = $conn->prepare("SELECT id_usuario, nome_usuario, email_usuario, telefone_usuario, endereco_usuario FROM usuario");
     $stmt->execute();
-
     $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Contar o total de registros para paginação
-    $query_total = "SELECT COUNT(*) as total FROM usuario WHERE nome_usuario LIKE :search OR email_usuario LIKE :search";
-    $stmt_total = $conn->prepare($query_total);
-    $stmt_total->bindParam(':search', $search_param, PDO::PARAM_STR);
-    $stmt_total->execute();
-    $total_registros = $stmt_total->fetch(PDO::FETCH_ASSOC)['total'];
-
-    // Formatar resposta JSON
-    $response = [
-        "usuarios" => $usuarios,
-        "paginacao" => [
-            "pagina_atual" => $pagina,
-            "total_paginas" => ceil($total_registros / $limite_resultado),
-            "total_registros" => $total_registros
-        ]
-    ];
-
-    echo json_encode($response, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(["erro" => "Erro ao buscar os usuários."]);
-    error_log("Erro PDO: " . $e->getMessage());
-} catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(["erro" => "Erro inesperado."]);
-    error_log("Erro geral: " . $e->getMessage());
+    $_SESSION['mensagem'] = "Erro ao buscar usuários: " . $e->getMessage();
+    header("Location: index.php");  // Redireciona em caso de erro
+    exit();
 }
+?>
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuários Cadastrados</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .user-list {
+            margin-top: 20px;
+            font-size: 1.1em;
+        }
+
+        .user-list table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .user-list th, .user-list td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .user-list th {
+            background-color: #f8f9fa;
+        }
+
+        .view-link {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .view-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Usuários Cadastrados</h1>
+
+        <?php if (isset($_SESSION['mensagem'])): ?>
+            <div class="message">
+                <?php echo htmlspecialchars($_SESSION['mensagem'], ENT_QUOTES); ?>
+            </div>
+            <?php unset($_SESSION['mensagem']); ?>
+        <?php endif; ?>
+
+        <div class="user-list">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>E-mail</th>
+                        <th>Telefone</th>
+                        <th> </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($usuarios as $usuario): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($usuario['id_usuario'], ENT_QUOTES); ?></td>
+                            <td><?php echo htmlspecialchars($usuario['nome_usuario'], ENT_QUOTES); ?></td>
+                            <td><?php echo htmlspecialchars($usuario['email_usuario'], ENT_QUOTES); ?></td>
+                            <td><?php echo htmlspecialchars($usuario['telefone_usuario'], ENT_QUOTES); ?></td>
+                            <td>
+                                <a href="detalhes_usuario.php?id=<?php echo $usuario['id_usuario']; ?>" class="view-link">Ver Detalhes</a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+</body>
+</html>

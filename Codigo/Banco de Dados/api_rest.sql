@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Tempo de geração: 13/11/2024 às 12:34
+-- Tempo de geração: 13/11/2024 às 13:45
 -- Versão do servidor: 8.2.0
 -- Versão do PHP: 8.2.13
 
@@ -36,20 +36,17 @@ CREATE TABLE IF NOT EXISTS `usuario` (
   `endereco_usuario` varchar(440) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
   `senha_usuario` varchar(220) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
   `recuperar_senha` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `imagem_usuario` varchar(220) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT '../css/img/usuario/no_image.png',
-  `statusAdministrador_usuario` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT 'c',
+  `statusAdministrador_usuario` enum('c','a','b') COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT 'c',
   PRIMARY KEY (`id_usuario`),
   UNIQUE KEY `unique_email_usuario` (`email_usuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=179 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=181 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 
 --
 -- Despejando dados para a tabela `usuario`
 --
 
-INSERT INTO `usuario` (`id_usuario`, `nome_usuario`, `telefone_usuario`, `email_usuario`, `endereco_usuario`, `senha_usuario`, `recuperar_senha`, `imagem_usuario`, `statusAdministrador_usuario`) VALUES
-(1, 'Admin2', '0', 'amandaveigafurtado@gmail.com', '', '$2y$10$QZEMW75b3179MRkwDPWsJ.FvMeSFvyB2b7KmbBir2y/G/PL9iWbEC', '$2y$10$dK3SGRRgT8jfSGLCjeM91Og0PQze0TMsOC1YIjTB9N69Vvy5Ftifu', '../css/img/usuario/672160106667a_67201a63d8546_no_image.png', 'a'),
-(177, 'Amanda', '55118888888888888', 'uuuuuuuuuuusuuuu@gmail.com', 'dd, 11, eee - cc, bb/bb - CEP: aaa', '$2y$10$7YiSw/N8Ptt1yursQ6ov6uCVdpSFGwcGqJBnlFgWaw5SeXsh.s/sa', NULL, '../css/img/usuario/no_image.png', 'c'),
-(178, 'Amanda', '55118888888888888', 'amandaveigafurtado7@gmail.com', 'ccsdc, 44, ssssssss - vcsc, vvv/1eee - CEP: 1111', '$2y$10$S2pF8MqeCxC5z8sZVYN77uRKpkm7nf2V6dTIbMIg1ut96b0ngBdeq', NULL, '../css/img/usuario/no_image.png', 'c');
+INSERT INTO `usuario` (`id_usuario`, `nome_usuario`, `telefone_usuario`, `email_usuario`, `endereco_usuario`, `senha_usuario`, `recuperar_senha`, `statusAdministrador_usuario`) VALUES
+(180, 'Amanda', '551155653199', 'amandaveigafurtado@gmail.com', 'Rua 2, 55, Apto 2A - Bairro 7, SP/SP - CEP: 55653199', '$2y$10$ukW0X4EwHKzwqWB8vghFceDYJNUE2njQ/xwiGJ2puFLrUOesBlyUm', NULL, 'c');
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

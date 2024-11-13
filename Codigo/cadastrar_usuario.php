@@ -12,23 +12,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['CadUsuario'])) {
     $nome_usuario = trim($_POST['nome_usuario']);
     $telefone_usuario = "";
     $email_usuario = trim($_POST['email_usuario']);
-// Validação e concatenação do endereço
-$cep = trim($_POST['cep']);
-$estado = trim($_POST['estado']);
-$cidade = trim($_POST['cidade']);
-$bairro = trim($_POST['bairro']);
-$rua = trim($_POST['rua']);
-$numero_end = trim($_POST['numero_end']);
-$complemento = trim($_POST['complemento']);
 
-// Verifica se todos os campos de endereço foram preenchidos
-if (!empty($cep) && !empty($estado) && !empty($cidade) && !empty($bairro) && !empty($rua) && !empty($numero_end)) {
-    $endereco_usuario = "$rua, $numero_end, $complemento - $bairro, $cidade/$estado - CEP: $cep";
-} else {
-    $_SESSION['mensagem'] = "Erro: Todos os campos do endereço devem ser preenchidos!";
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit();
-}
+    // Validação do formato de e-mail
+    if (!filter_var($email_usuario, FILTER_VALIDATE_EMAIL)) {
+        $_SESSION['mensagem'] = "Erro: E-mail inválido!";
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit();
+    }
+
+    // Validação e concatenação do endereço
+    $cep = trim($_POST['cep']);
+    $estado = trim($_POST['estado']);
+    $cidade = trim($_POST['cidade']);
+    $bairro = trim($_POST['bairro']);
+    $rua = trim($_POST['rua']);
+    $numero_end = trim($_POST['numero_end']);
+    $complemento = trim($_POST['complemento']);
+
+    // Verifica se todos os campos de endereço foram preenchidos
+    if (!empty($cep) && !empty($estado) && !empty($cidade) && !empty($bairro) && !empty($rua) && !empty($numero_end)) {
+        $endereco_usuario = "$rua, $numero_end, $complemento - $bairro, $cidade/$estado - CEP: $cep";
+    } else {
+        $_SESSION['mensagem'] = "Erro: Todos os campos do endereço devem ser preenchidos!";
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit();
+    }
+
     $senha_usuario = trim($_POST['senha_usuario']);
 
     // Validação e concatenação do telefone
@@ -127,12 +136,12 @@ if (!empty($cep) && !empty($estado) && !empty($cidade) && !empty($bairro) && !em
 
                     <h2>Telefone</h2>
                     <label for="codigo_telefonico_pais">+</label>
-                    <input type="tel" name="codigo_telefonico_pais" id="codigo_telefonico_pais" placeholder="55"
+                    <input type="tel" name="codigo_telefonico_pais" id="codigo_telefonico_pais" placeholder=""
                            value="<?php echo isset($dados['codigo_telefonico_pais']) ? htmlspecialchars($dados['codigo_telefonico_pais'], ENT_QUOTES) : ''; ?>" 
                            style="width: 12%;" required pattern="\d*" 
                            title="Apenas números são permitidos" oninput="this.value = this.value.replace(/\D/g, '')">
 
-                       <input type="tel" name="codigo_telefonico_estado" id="codigo_telefonico_estado" placeholder="11"
+                       <input type="tel" name="codigo_telefonico_estado" id="codigo_telefonico_estado" placeholder=""
                            value="<?php echo isset($dados['codigo_telefonico_estado']) ? htmlspecialchars($dados['codigo_telefonico_estado'], ENT_QUOTES) : ''; ?>" 
                            style="width: 12%;" required pattern="\d*" 
                            title="Apenas números são permitidos" oninput="this.value = this.value.replace(/\D/g, '')">
@@ -151,10 +160,7 @@ if (!empty($cep) && !empty($estado) && !empty($cidade) && !empty($bairro) && !em
                     <input type="text" name="cep" id="cep" 
                            value="<?php echo isset($dados['cep']) ? htmlspecialchars($dados['cep'], ENT_QUOTES) : ''; ?>" 
                            style="width: 100%;" required pattern="\d*" 
-                           title="Apenas números são permitidos" oninput="this.value = this.value.replace(/\D/g, '')"><br>
-
-
-
+                           title="Apenas números são permitidos" oninput="this.value = this.value.replace(/\D/g, '')" placeholder="CEP"><br>
 
                     <input type="text" name="estado" id="estado" required style="width: 49%;" placeholder="Estado"><?php echo isset($dados['estado']) ? htmlspecialchars($dados['estado'], ENT_QUOTES) : ''; ?>
 
@@ -167,7 +173,7 @@ if (!empty($cep) && !empty($estado) && !empty($cidade) && !empty($bairro) && !em
                     <input type="text" name="numero_end" id="numero_end" 
                            value="<?php echo isset($dados['numero_end']) ? htmlspecialchars($dados['numero_end'], ENT_QUOTES) : ''; ?>" 
                            style="width: 19%;" required pattern="\d*" 
-                           title="Apenas números são permitidos" oninput="this.value = this.value.replace(/\D/g, '')"><br>
+                           title="Apenas números são permitidos" oninput="this.value = this.value.replace(/\D/g, '')"placeholder="Número"><br>
 
                            <input type="text" name="complemento" id="complemento" required style="width: 100%;" placeholder="Complemento"><?php echo isset($dados['complemento']) ? htmlspecialchars($dados['complemento'], ENT_QUOTES) : ''; ?>
 

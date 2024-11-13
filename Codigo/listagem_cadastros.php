@@ -5,7 +5,6 @@
     include_once 'conexao.php';
     include 'css/functions.php';
     include_once 'menu.php';
-    include_once 'menu_admin.php';
 
     // Debug para verificar o conteúdo da sessão
     // var_dump($_SESSION);
@@ -60,7 +59,7 @@
                     // Debugging: Log query string
                     error_log("Search term: $search");
 
-                    $query_usuario = "SELECT id_usuario, nome_usuario, email_usuario, imagem_usuario, statusAdministrador_usuario
+                    $query_usuario = "SELECT id_usuario, nome_usuario, email_usuario, statusAdministrador_usuario
                                       FROM usuario
                                       WHERE nome_usuario LIKE :search OR email_usuario LIKE :search
                                       LIMIT :inicio, :limite";
@@ -89,7 +88,6 @@
                             $id_usuario = htmlspecialchars($usuario['id_usuario']);
                             $nome_usuario = htmlspecialchars($usuario['nome_usuario']) ?? 'Nome do Usuário Indisponível';
                             $email_usuario = htmlspecialchars($usuario['email_usuario']);
-                            $imagem_usuario = htmlspecialchars($usuario['imagem_usuario']) ?? 'caminho/default_image.jpg';
                             $statusAdministrador_usuario = htmlspecialchars($usuario['statusAdministrador_usuario']);
 
                             // Display user card
@@ -98,7 +96,6 @@
 <div class="projcard-small">
     <a href="registro_usuario.php?id_usuario=<?php echo htmlspecialchars($id_usuario); ?>" style="text-decoration: none; display: block;">
         <div class="projcard-innerbox">
-            <img class="projcard-img" src="<?php echo htmlspecialchars($imagem_usuario); ?>" alt="Imagem do Usuário">
             <div class="projcard-textbox">
                 <div class="projcard-subtitle">
                     <?php echo '<br><i class="fa-regular fa-address-card" style="color: #fe797b;"></i> ' . htmlspecialchars($nome_usuario) . '<span style="margin-left: 10px;"></span><i class="fa-solid fa-fingerprint" style="color: #ffb750;"></i> ' . htmlspecialchars($id_usuario); ?>                

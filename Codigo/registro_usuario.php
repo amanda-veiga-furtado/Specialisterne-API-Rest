@@ -5,7 +5,6 @@ ob_start();
 include_once 'conexao.php';
 include 'css/functions.php';
 include_once 'menu.php'; 
-include_once 'menu_admin.php';
 
 // Debug: verifica o conteúdo da sessão
 // var_dump($_SESSION);

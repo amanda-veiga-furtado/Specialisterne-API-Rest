@@ -28,9 +28,8 @@ include_once 'menu.php';
                     <div class="form_switch">
                         <div class="form-toggle">
                             <button id="loginBtn" onclick="showLogin()">Login</button> <!-- Exibir o formulário de login -->
-                            <button id="signupBtn" onclick="showSignup()">Cadastro</button> <!-- Exibir form de cadastro -->
 
-                            <div id="toggleLine" class="toggle-line-small"></div> <!-- Linha colorida de seleção atual -->
+                            <div id="toggleLine" class="toggle-line-big"></div> <!-- Linha colorida de seleção atual -->
                     </div>
                     
                     <!-- Login --------------------------------------------------------------------------->
@@ -95,60 +94,7 @@ include_once 'menu.php';
                         </div>
                     </form>
 
-                    <!-- Cadastro ------------------------------------------------------------------------>
-                    <?php
-                        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['CadUsuario'])) {
-                            $nome_usuario = $_POST['nome_usuario'];
-                            $email_usuario = $_POST['email_usuario'];
-                            $senha_usuario = $_POST['senha_usuario'];
 
-                            $senha_hash = password_hash($senha_usuario, PASSWORD_DEFAULT);
-
-                            try {
-                                $stmt = $conn->prepare("SELECT COUNT(*) FROM usuario WHERE nome_usuario = :nome_usuario OR email_usuario = :email_usuario");
-                                $stmt->bindParam(':nome_usuario', $nome_usuario);
-                                $stmt->bindParam(':email_usuario', $email_usuario);
-                                $stmt->execute();
-                                $count = $stmt->fetchColumn();
-
-                                if ($count > 0) {
-                                    $_SESSION['mensagem'] = "Erro: Nome de usuário ou email já cadastrados!";
-                                } else {
-                                    $stmt = $conn->prepare("INSERT INTO usuario (nome_usuario, email_usuario, senha_usuario) VALUES (:nome_usuario, :email_usuario, :senha_usuario)");
-
-                                    $stmt->bindParam(':nome_usuario', $nome_usuario);
-                                    $stmt->bindParam(':email_usuario', $email_usuario);
-                                    $stmt->bindParam(':senha_usuario', $senha_hash);
-                                    $stmt->execute();
-
-                                    $_SESSION['mensagem'] = "Usuário cadastrado com sucesso!";
-                                }
-                            } catch (PDOException $e) {
-                                $_SESSION['mensagem'] = "Erro: Usuário não cadastrado com sucesso!";
-                            }
-
-                            header("Location: " . $_SERVER['PHP_SELF']);
-                            exit();
-                        }
-                    ?>
-
-                    <form name="signupForm" id="signupForm" method="POST" action="" class="form" style="display: none;">
-                        <!-- <h2>Cadastro</h2> -->
-                        <input type="text" name="nome_usuario" id="nome_usuario" placeholder="Nome de Usuario" required>
-                        <input type="email" name="email_usuario" id="email_usuario" placeholder="Email" required>
-                        <input type="password" name="senha_usuario" id="senha_usuario" placeholder="Senha" required>
-
-                        <div class="container-button-long">
-
-                        <input type="submit" name="CadUsuario" value="Cadastrar" class="button-long">
-                        <!-- <div class="div_link"><a href="recuperar_senha/recuperar_senha.php" style="color: white;">Recuperar Acesso</a></div></div> -->
-
-                        <div class="div_link">
-                            <a href="recuperar_senha/recuperar_senha.php" style="color: white; pointer-events: none;">Recuperar Acesso</a>
-                        </div>
-
-                        
-                    </form>
                 </div>
                 </div>
             </div>

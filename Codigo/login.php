@@ -8,9 +8,9 @@ if (isset($_GET['mensagem'])) {
     echo "<script>alert('$mensagem');</script>";
 }
 
-include_once '../conexao.php'; 
-include '../css/functions.php';
-include_once '../menu.php'; 
+include_once 'conexao.php'; 
+include 'css/functions.php';
+include_once 'menu.php'; 
 ?>
 
 <!DOCTYPE html>
